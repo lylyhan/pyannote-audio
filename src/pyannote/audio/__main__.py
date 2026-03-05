@@ -48,7 +48,8 @@ from pyannote.pipeline.optimizer import Optimizer
 from rich.progress import track
 from scipy.optimize import minimize_scalar
 from typing_extensions import Annotated
-
+import pdb
+from pyannote.metrics.errors.identification import IdentificationErrorAnalysis
 
 class Subset(str, Enum):
     train = "train"
@@ -681,7 +682,7 @@ def benchmark(
         tic: float = time.time()
 
         # apply pretrained pipeline to file
-        prediction = pretrained_pipeline(file, **file.get("pipeline_kwargs", {}))
+        prediction = pretrained_pipeline(file, **file.get("pipeline_kwargs", {})) #dictionary
 
         tac: float = time.time()
         processing_time[uri] = tac - tic
@@ -713,7 +714,23 @@ def benchmark(
                 file["annotation"],
                 speaker_diarization,
                 uem=file.get("annotated", None),
-            )
+            ) # dict of DER breakdown but only with percentage
+        
+        # get details about DER breakfdown:
+        analysis = IdentificationErrorAnalysis()        
+        duration_confusion_matrix = analysis.matrix(file["annotation"], speaker_diarization,
+                                   uem=file.get("annotated", None))
+        
+        # save per-file clustering artifacts
+        if "debug/klusters" in file:
+            debug_dir = into / f"{benchmark_name}.clustering_debug"
+            debug_dir.mkdir(exist_ok=True)
+            torch.save(file["debug/klusters"],                    debug_dir / f"{uri}.klusters.pt")
+            torch.save(file["debug/hard_aggregated_diarization"], debug_dir / f"{uri}.hard_agg_diar.pt")
+            torch.save(file["debug/soft_aggregated_diarization"], debug_dir / f"{uri}.soft_agg_diar.pt")
+            if file.get("debug/responsibilities") is not None:
+                torch.save(file["debug/responsibilities"],        debug_dir / f"{uri}.responsibilities.pt")
+            torch.save(duration_confusion_matrix,                 debug_dir / f"{uri}.durationconfusion_matrix.pt")
 
         # increment speaker count confusion matrix
         pred_num_speakers: int = len(speaker_diarization.labels())
