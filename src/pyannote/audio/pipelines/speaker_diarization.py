@@ -51,7 +51,7 @@ from pyannote.audio.utils.signal import binarize
 from pyannote.core import Annotation, SlidingWindowFeature
 from pyannote.metrics.diarization import GreedyDiarizationErrorRate
 from pyannote.pipeline.parameter import ParamDict, Uniform
-
+import pdb
 
 def batchify(iterable, batch_size: int = 32, fillvalue=None):
     """Batchify iterable"""
@@ -637,7 +637,7 @@ class SpeakerDiarization(SpeakerDiarizationMixin, Pipeline):
         hook("embeddings", embeddings)
         #   shape: (num_chunks, local_num_speakers, dimension)
 
-        hard_clusters, _, centroids = self.clustering(
+        hard_clusters, soft_clusters, centroids = self.clustering(
             embeddings=embeddings,
             segmentations=binarized_segmentations,
             num_clusters=num_speakers,
@@ -648,7 +648,7 @@ class SpeakerDiarization(SpeakerDiarizationMixin, Pipeline):
         )
         # hard_clusters: (num_chunks, num_speakers)
         # centroids: (num_speakers, dimension)
-
+        pdb.set_trace()
         # number of detected clusters is the number of different speakers
         num_different_speakers = np.max(hard_clusters) + 1
 
@@ -781,7 +781,7 @@ class SpeakerDiarization(SpeakerDiarizationMixin, Pipeline):
         if self.legacy:
             return output.speaker_diarization
 
-        return output
+        return output, hard_clusters, soft_clusters, self.clustering.gamma
 
     def get_metric(self) -> GreedyDiarizationErrorRate:
         return GreedyDiarizationErrorRate(**self.der_variant)
