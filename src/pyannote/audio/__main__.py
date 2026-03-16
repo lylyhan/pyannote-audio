@@ -51,6 +51,7 @@ from typing_extensions import Annotated
 import pdb
 from pyannote.metrics.errors.identification import IdentificationErrorAnalysis
 
+
 class Subset(str, Enum):
     train = "train"
     development = "development"
@@ -680,9 +681,9 @@ def benchmark(
         playing_time[uri] = Audio().get_duration(file)
 
         tic: float = time.time()
-
         # apply pretrained pipeline to file
-        prediction = pretrained_pipeline(file, **file.get("pipeline_kwargs", {})) #dictionary
+
+        prediction = pretrained_pipeline(file, **file.get("pipeline_kwargs", {}))
 
         tac: float = time.time()
         processing_time[uri] = tac - tic
