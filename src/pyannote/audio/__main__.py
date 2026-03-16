@@ -721,6 +721,7 @@ def benchmark(
         duration_confusion_matrix = analysis.matrix(file["annotation"], speaker_diarization,
                                    uem=file.get("annotated", None))
         
+        """
         # save per-file clustering artifacts
         if "debug/klusters" in file:
             debug_dir = into / f"{benchmark_name}.clustering_debug"
@@ -731,7 +732,10 @@ def benchmark(
             if file.get("debug/responsibilities") is not None:
                 torch.save(file["debug/responsibilities"],        debug_dir / f"{uri}.responsibilities.pt")
             torch.save(duration_confusion_matrix,                 debug_dir / f"{uri}.durationconfusion_matrix.pt")
-
+            if file.get("annotation") is not None:
+                with open(debug_dir / f"{uri}.reference.rttm", "w") as ref_rttm:
+                    file["annotation"].write_rttm(ref_rttm)
+        """
         # increment speaker count confusion matrix
         pred_num_speakers: int = len(speaker_diarization.labels())
         true_num_speakers: int = len(file["annotation"].labels())
