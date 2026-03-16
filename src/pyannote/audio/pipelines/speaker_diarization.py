@@ -637,7 +637,7 @@ class SpeakerDiarization(SpeakerDiarizationMixin, Pipeline):
         hook("embeddings", embeddings)
         #   shape: (num_chunks, local_num_speakers, dimension)
 
-        hard_clusters, _, centroids = self.clustering(
+        hard_clusters, soft_clusters, centroids = self.clustering(
             embeddings=embeddings,
             segmentations=binarized_segmentations,
             num_clusters=num_speakers,
